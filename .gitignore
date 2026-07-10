@@ -1,0 +1,4 @@
+.git_publish_meta/
+git_publish_meta/
+.vercel/
+node_modules/
