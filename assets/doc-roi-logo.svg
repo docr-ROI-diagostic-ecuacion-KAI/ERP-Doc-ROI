@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="240" height="80" viewBox="0 0 240 80" role="img" aria-label="DOC ROI">
+  <rect width="240" height="80" rx="8" fill="#ffffff"/>
+  <rect x="8" y="8" width="224" height="64" rx="6" fill="#003b5c"/>
+  <text x="120" y="47" text-anchor="middle" font-family="Inter, Arial, sans-serif" font-size="28" font-weight="900" fill="#d8ecf8">DOC ROI</text>
+</svg>
