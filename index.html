@@ -1,0 +1,84 @@
+<!doctype html>
+<html lang="es">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>DocROI Academic Control Center</title>
+    <meta
+      name="description"
+      content="Centro privado DocROI para controlar programas, sesiones, documentos, evaluaciones, finanzas, contactos y alertas docentes."
+    />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <div class="app-shell">
+      <aside class="sidebar" aria-label="Navegacion principal">
+        <a class="brand" href="#dashboard" data-route="dashboard" aria-label="DocROI Academic Control Center">
+          <span class="brand-mark">DR</span>
+          <span>
+            <strong>DocROI</strong>
+            <small>Academic Control Center</small>
+          </span>
+        </a>
+        <nav id="mainNav"></nav>
+        <div class="privacy-box">
+          <span>Acceso privado</span>
+          <strong>Modo local</strong>
+          <small>Datos guardados en este navegador. Estructura preparada para autenticacion futura.</small>
+        </div>
+      </aside>
+
+      <div class="main-shell">
+        <header class="topbar">
+          <button class="icon-btn menu-toggle" id="menuToggle" type="button" aria-label="Abrir menu">Menu</button>
+          <div>
+            <p class="eyebrow">Sistema operativo docente personal</p>
+            <h1 id="pageTitle">Dashboard</h1>
+          </div>
+          <div class="top-actions">
+            <input id="globalSearch" type="search" placeholder="Buscar institucion, programa, documento..." />
+            <button class="btn ghost" id="resetSeed" type="button">Restablecer demo</button>
+          </div>
+        </header>
+
+        <main id="app" tabindex="-1"></main>
+      </div>
+    </div>
+
+    <dialog id="recordDialog">
+      <form method="dialog" class="dialog-card" id="recordForm">
+        <div class="dialog-head">
+          <div>
+            <p class="eyebrow" id="dialogKicker">Ficha</p>
+            <h2 id="dialogTitle">Nuevo registro</h2>
+          </div>
+          <button class="icon-btn" value="cancel" aria-label="Cerrar">x</button>
+        </div>
+        <div id="formFields" class="form-grid"></div>
+        <div class="dialog-actions">
+          <button class="btn danger" id="deleteRecord" type="button">Eliminar</button>
+          <button class="btn secondary" value="cancel" type="button" id="cancelDialog">Cancelar</button>
+          <button class="btn primary" value="default" type="submit">Guardar</button>
+        </div>
+      </form>
+    </dialog>
+
+    <dialog id="detailDialog">
+      <div class="dialog-card detail-dialog">
+        <div class="dialog-head">
+          <div>
+            <p class="eyebrow" id="detailKicker">Detalle</p>
+            <h2 id="detailTitle">Ficha</h2>
+          </div>
+          <button class="icon-btn" id="closeDetail" type="button" aria-label="Cerrar">x</button>
+        </div>
+        <div id="detailContent"></div>
+      </div>
+    </dialog>
+
+    <script src="app.js"></script>
+  </body>
+</html>
