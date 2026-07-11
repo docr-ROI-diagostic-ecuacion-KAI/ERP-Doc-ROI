@@ -1,5 +1,5 @@
 (function(){
-  const VERSION = "20260711-visual-system";
+  const VERSION = "20260712-color-picker";
   if (globalThis.__docroiVisualSystem === VERSION) return;
   globalThis.__docroiVisualSystem = VERSION;
 
@@ -105,9 +105,49 @@
     });
   }
 
+  function enhanceInstitutionColorPicker(){
+    const dialog = document.querySelector("#recordDialog");
+    if (!dialog?.open) return;
+    const kicker = document.querySelector("#dialogKicker")?.textContent || "";
+    if (!/Instituciones/i.test(kicker)) return;
+    const input = dialog.querySelector('input[name="brandColor"][type="color"]');
+    if (!input || input.closest(".color-picker-shell")) return;
+    const label = input.closest("label");
+    if (!label) return;
+    const shell = document.createElement("div");
+    shell.className = "color-picker-shell";
+    shell.innerHTML = `<div class="color-picker-head"><strong>Color visual de la institucion</strong><span>Se aplicara a programas, sesiones, calendario, alertas y finanzas.</span></div><div class="color-swatch-row"></div>`;
+    const row = shell.querySelector(".color-swatch-row");
+    defaults.forEach(color => {
+      const button = document.createElement("button");
+      button.type = "button";
+      button.className = "color-swatch";
+      button.style.setProperty("--swatch", color);
+      button.setAttribute("aria-label", `Elegir color ${color}`);
+      button.addEventListener("click", () => {
+        input.value = color;
+        input.dispatchEvent(new Event("input", { bubbles: true }));
+      });
+      row.appendChild(button);
+    });
+    const preview = document.createElement("span");
+    preview.className = "color-preview-pill";
+    preview.textContent = "Vista previa";
+    const paint = () => {
+      preview.style.setProperty("--swatch", input.value || defaults[0]);
+      row.querySelectorAll(".color-swatch").forEach(button => button.classList.toggle("active", button.style.getPropertyValue("--swatch").trim().toLowerCase() === String(input.value).toLowerCase()));
+    };
+    input.addEventListener("input", paint);
+    shell.querySelector(".color-picker-head").appendChild(preview);
+    shell.appendChild(input);
+    label.replaceWith(shell);
+    paint();
+  }
+
   function decorate(){
     decorateRecords();
     addDashboardChips();
+    enhanceInstitutionColorPicker();
   }
 
   const originalRender = typeof render === "function" ? render : null;
@@ -124,6 +164,15 @@
     const detail = card.querySelector("[data-detail-module][data-detail-id]");
     if (detail) detail.click();
   });
+
+  const originalOpenForm = typeof openForm === "function" ? openForm : null;
+  if (originalOpenForm && !globalThis.__docroiColorOpenFormPatched) {
+    globalThis.__docroiColorOpenFormPatched = true;
+    openForm = function(module, id){
+      originalOpenForm(module, id);
+      setTimeout(enhanceInstitutionColorPicker, 0);
+    };
+  }
 
   setTimeout(decorate, 0);
 })();
