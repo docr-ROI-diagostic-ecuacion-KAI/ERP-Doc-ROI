@@ -1,0 +1,81 @@
+.modal-safe-close,
+dialog .dialog-head .icon-btn,
+dialog button[value="cancel"],
+#closeDetail,
+#cancelDialog {
+  cursor: pointer;
+}
+
+.overlap-alert,
+.finance-alert-row {
+  border-left: 4px solid rgba(255, 127, 135, 0.86) !important;
+  background: linear-gradient(135deg, rgba(255, 127, 135, 0.14), rgba(255, 255, 255, 0.035)) !important;
+}
+
+.check-doc-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) 150px minmax(180px, 0.9fr);
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+
+.check-doc-row span {
+  min-width: 0;
+}
+
+.check-doc-row select {
+  width: 100%;
+}
+
+.report-toolbar {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  align-items: center;
+}
+
+.finance-tracking-grid {
+  display: grid;
+  gap: 14px;
+}
+
+.finance-tracking-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) minmax(170px, auto) minmax(170px, auto) auto;
+  gap: 12px;
+  align-items: center;
+  padding: 12px;
+  border: 1px solid rgba(170, 198, 231, 0.16);
+  border-left: 4px solid var(--inst-color, rgba(135, 240, 255, 0.52));
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--inst-bg, rgba(13, 95, 147, 0.12)), rgba(255, 255, 255, 0.035));
+}
+
+.finance-tracking-row strong,
+.finance-tracking-row span,
+.finance-tracking-row small {
+  text-align: left;
+}
+
+.finance-tracking-row small {
+  color: #aac6e7;
+  font-weight: 800;
+}
+
+.finance-status {
+  display: inline-flex;
+  width: max-content;
+  padding: 7px 9px;
+  border: 1px solid rgba(135, 240, 255, 0.28);
+  border-radius: 8px;
+  color: #87f0ff;
+  font-weight: 900;
+}
+
+@media (max-width: 980px) {
+  .check-doc-row,
+  .finance-tracking-row {
+    grid-template-columns: 1fr;
+  }
+}
