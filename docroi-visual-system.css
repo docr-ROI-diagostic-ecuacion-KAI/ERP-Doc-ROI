@@ -1,0 +1,129 @@
+/* DocROI visual system patch: institution color, compact dashboard and readable calendar */
+.dashboard-hero {
+  display: none !important;
+}
+
+.insight-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 14px;
+}
+
+.chart-card {
+  display: grid;
+  gap: 10px;
+}
+
+.chart-card h3 {
+  margin-bottom: 6px;
+}
+
+.chart-row,
+.chart-row.compact {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: 10px;
+  align-items: center;
+  padding: 10px 12px;
+  border: 1px solid rgba(170, 198, 231, 0.18);
+  border-left: 4px solid var(--inst-color, rgba(135, 240, 255, 0.62));
+  border-radius: 8px;
+  background: linear-gradient(135deg, var(--inst-bg, rgba(13, 95, 147, 0.14)), rgba(255, 255, 255, 0.035));
+}
+
+.chart-row div {
+  display: none;
+}
+
+.chart-row span {
+  color: #d9e9f8;
+  font-size: 0.9rem;
+  font-weight: 850;
+  white-space: normal;
+}
+
+.chart-row strong {
+  color: #87f0ff;
+  font-size: 0.95rem;
+  text-align: right;
+}
+
+.record-card,
+.list-row,
+.calendar-chip,
+.month-row,
+.income-line,
+.predictive-row {
+  border-left: 4px solid var(--inst-color, rgba(135, 240, 255, 0.52)) !important;
+  background:
+    linear-gradient(135deg, var(--inst-bg, rgba(13, 95, 147, 0.12)), rgba(255, 255, 255, 0.035)) !important;
+}
+
+.record-card {
+  cursor: pointer;
+}
+
+.month-row {
+  grid-template-columns: 158px minmax(0, 1fr) 120px;
+  color: #edf6ff !important;
+}
+
+.month-row,
+.month-row span,
+.month-row strong,
+.month-row small,
+.month-row em {
+  background: transparent !important;
+  color: inherit;
+  line-height: 1.25;
+}
+
+.month-row span,
+.month-row small,
+.month-row em {
+  color: #aac6e7 !important;
+}
+
+.month-row strong {
+  color: #edf6ff !important;
+  white-space: normal;
+}
+
+.calendar-chip {
+  min-height: 54px;
+}
+
+.institution-logo.inherited-logo,
+.record-card .institution-logo {
+  box-shadow: 0 0 0 1px color-mix(in srgb, var(--inst-color, #87f0ff) 45%, transparent), 0 10px 24px rgba(0,0,0,.22);
+}
+
+.visual-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin: 10px 0 0;
+}
+
+.visual-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 10px;
+  border: 1px solid color-mix(in srgb, var(--inst-color, #87f0ff) 38%, rgba(170,198,231,.24));
+  border-radius: 8px;
+  background: var(--inst-bg, rgba(13,95,147,.14));
+  color: #edf6ff;
+  font-size: .82rem;
+  font-weight: 850;
+}
+
+@media (max-width: 900px) {
+  .insight-grid {
+    grid-template-columns: 1fr;
+  }
+
+  .month-row {
+    grid-template-columns: 1fr;
+  }
+}
