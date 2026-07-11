@@ -53,7 +53,10 @@
 .calendar-chip,
 .month-row,
 .income-line,
-.predictive-row {
+.predictive-row,
+.finance-tracking-row,
+.mini-checklist li,
+.detail-dialog {
   border-left: 4px solid var(--inst-color, rgba(135, 240, 255, 0.52)) !important;
   background:
     linear-gradient(135deg, var(--inst-bg, rgba(13, 95, 147, 0.12)), rgba(255, 255, 255, 0.035)) !important;
@@ -116,6 +119,71 @@
 .institution-logo.inherited-logo,
 .record-card .institution-logo {
   box-shadow: 0 0 0 1px color-mix(in srgb, var(--inst-color, #87f0ff) 45%, transparent), 0 10px 24px rgba(0,0,0,.22);
+}
+
+.institution-mini-brand {
+  display: inline-flex;
+  align-items: center;
+  width: max-content;
+  max-width: 100%;
+  gap: 7px;
+  margin: 0 8px 6px 0;
+  padding: 4px 7px;
+  border: 1px solid color-mix(in srgb, var(--inst-color, #87f0ff) 42%, rgba(170,198,231,.24));
+  border-radius: 8px;
+  background: var(--inst-bg-strong, rgba(13,95,147,.22));
+  color: #edf6ff;
+  font-size: .72rem;
+  font-weight: 900;
+  line-height: 1.1;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.institution-mini-brand span:last-child {
+  overflow: hidden;
+  max-width: 150px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.institution-mini-logo {
+  display: inline-grid;
+  place-items: center;
+  flex: 0 0 auto;
+  width: 24px;
+  height: 24px;
+  border: 1px solid rgba(255,255,255,.2);
+  border-radius: 6px;
+  background: rgba(255,255,255,.92);
+  color: #06111f;
+  object-fit: contain;
+  font-size: .62rem;
+  font-weight: 950;
+}
+
+.institution-mini-placeholder {
+  background: color-mix(in srgb, var(--inst-color, #87f0ff) 28%, #ffffff);
+}
+
+.record-card > .institution-mini-brand,
+.list-row > .institution-mini-brand,
+.calendar-chip > .institution-mini-brand,
+.month-row > .institution-mini-brand,
+.predictive-row > .institution-mini-brand,
+.finance-tracking-row > .institution-mini-brand {
+  grid-column: 1 / -1;
+}
+
+.detail-dialog > .institution-mini-brand {
+  margin: 0 0 12px;
+}
+
+.status-pill,
+.finance-status,
+.visual-chip,
+.kpi-card {
+  border-color: color-mix(in srgb, var(--inst-color, #87f0ff) 38%, rgba(170,198,231,.24)) !important;
 }
 
 .visual-chip-row {
