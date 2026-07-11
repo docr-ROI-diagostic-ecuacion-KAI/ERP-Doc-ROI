@@ -64,8 +64,10 @@
 }
 
 .month-row {
-  grid-template-columns: 158px minmax(0, 1fr) 120px;
+  grid-template-columns: 170px minmax(0, 1fr) 140px;
   color: #edf6ff !important;
+  justify-items: stretch;
+  text-align: left !important;
 }
 
 .month-row,
@@ -82,15 +84,33 @@
 .month-row small,
 .month-row em {
   color: #aac6e7 !important;
+  text-align: left !important;
 }
 
 .month-row strong {
   color: #edf6ff !important;
   white-space: normal;
+  text-align: left !important;
 }
 
 .calendar-chip {
   min-height: 54px;
+  text-align: left !important;
+  justify-items: start;
+}
+
+.calendar-chip strong,
+.calendar-chip span,
+.calendar-day,
+.calendar-day header,
+.calendar-day p,
+.month-list,
+.week-grid {
+  text-align: left !important;
+}
+
+.month-list .empty-state {
+  text-align: left !important;
 }
 
 .institution-logo.inherited-logo,
