@@ -270,7 +270,7 @@
 (function(){
   if (document.querySelector('script[src*="docroi-entity-model.js"]')) return;
   const script = document.createElement("script");
-  script.src = "docroi-entity-model.js?v=20260712-entity-model-1";
+  script.src = "docroi-entity-model.js?v=20260712-entity-model-2";
   script.defer = true;
   (document.currentScript || document.body).after(script);
 })();
