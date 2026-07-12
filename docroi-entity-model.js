@@ -30,12 +30,7 @@
     if (!navRef) return;
     desiredNav.forEach(item => {
       const current = navRef.find(row => row[0] === item[0]);
-      if (current) {
-        current[1] = item[1];
-        current[2] = item[2];
-      } else {
-        navRef.push([...item]);
-      }
+      if (current) { current[1] = item[1]; current[2] = item[2]; } else { navRef.push([...item]); }
     });
     navRef.sort((a,b) => desiredNav.findIndex(item => item[0] === a[0]) - desiredNav.findIndex(item => item[0] === b[0]));
   }
@@ -84,12 +79,7 @@
   }
 
   function normalizePrograms(){
-    const embeddedPeople = new Set([
-      "academicContactId", "adminContactId", "directorOrgId", "coordinatorOrgId", "adminOrgId",
-      "directorName", "directorRole", "directorEmail", "directorPhone",
-      "coordinatorName", "coordinatorRole", "coordinatorEmail", "coordinatorPhone",
-      "adminName", "adminRole", "adminEmail", "adminPhone", "responsibleAdminId"
-    ]);
+    const embeddedPeople = new Set(["academicContactId", "adminContactId", "directorOrgId", "coordinatorOrgId", "adminOrgId", "directorName", "directorRole", "directorEmail", "directorPhone", "coordinatorName", "coordinatorRole", "coordinatorEmail", "coordinatorPhone", "adminName", "adminRole", "adminEmail", "adminPhone", "responsibleAdminId"]);
     removeFields("programs", field => {
       const key = field[0];
       const label = norm(field[1]);
@@ -130,6 +120,42 @@
     return hours > 0 ? String(Math.round(hours * 100) / 100) : "";
   }
 
+  function optionLabel(item){ return item?.name || item?.title || item?.concept || item?.id || "Sin nombre"; }
+
+  function ensureRelationSelect(name, module, labelText, required){
+    const dialog = document.querySelector("#recordDialog");
+    const current = dialog?.querySelector(`[name="${name}"]`);
+    if (!dialog || !current) return null;
+    if (current.tagName === "SELECT" && current.options.length > 1) return current;
+    const select = document.createElement("select");
+    select.name = name;
+    if (required) select.required = true;
+    select.innerHTML = `<option value="">Sin asignar</option>${(state[module] || []).map(item => `<option value="${item.id}" ${item.id === current.value ? "selected" : ""}>${optionLabel(item)}</option>`).join("")}`;
+    const label = current.closest("label");
+    if (label) {
+      label.innerHTML = "";
+      label.append(document.createTextNode(labelText));
+      label.appendChild(select);
+    } else {
+      current.replaceWith(select);
+    }
+    return select;
+  }
+
+  function syncOrganizationDialog(){
+    const dialog = document.querySelector("#recordDialog");
+    if (!dialog?.open || !/Organizacion/i.test(document.querySelector("#dialogKicker")?.textContent || "")) return;
+    const institution = ensureRelationSelect("institutionId", "institutions", "Institucion", true);
+    const program = ensureRelationSelect("programId", "programs", "Programa", false);
+    if (!institution || !program) return;
+    [...program.options].forEach(option => {
+      if (!option.value) { option.hidden = false; return; }
+      const p = (state.programs || []).find(item => item.id === option.value);
+      option.hidden = Boolean(institution.value && p?.institutionId && p.institutionId !== institution.value);
+    });
+    if (program.selectedOptions[0]?.hidden) program.value = "";
+  }
+
   function syncSessionDialog(){
     const dialog = document.querySelector("#recordDialog");
     if (!dialog?.open) return;
@@ -157,14 +183,6 @@
         if (calculated) duration.value = calculated;
       }
     }
-    if (/Organizacion/i.test(kicker) && institution && program) {
-      [...program.options].forEach(option => {
-        if (!option.value) { option.hidden = false; return; }
-        const p = (state.programs || []).find(item => item.id === option.value);
-        option.hidden = Boolean(institution.value && p?.institutionId && p.institutionId !== institution.value);
-      });
-      if (program.selectedOptions[0]?.hidden) program.value = "";
-    }
   }
 
   function applyModel(){
@@ -182,9 +200,12 @@
     if (event.target?.matches?.('#recordDialog [name="startTime"], #recordDialog [name="endTime"]')) syncSessionDialog();
   }, true);
   document.addEventListener("change", event => {
-    if (event.target?.matches?.('#recordDialog [name="institutionId"], #recordDialog [name="programId"], #recordDialog [name="startTime"], #recordDialog [name="endTime"]')) syncSessionDialog();
+    if (event.target?.matches?.('#recordDialog [name="institutionId"], #recordDialog [name="programId"], #recordDialog [name="startTime"], #recordDialog [name="endTime"]')) {
+      syncSessionDialog();
+      syncOrganizationDialog();
+    }
   }, true);
-  document.addEventListener("submit", () => syncSessionDialog(), true);
+  document.addEventListener("submit", () => { syncSessionDialog(); syncOrganizationDialog(); }, true);
 
   const originalOpenForm = typeof openForm === "function" ? openForm : null;
   if (originalOpenForm && !globalThis.__docroiEntityModelOpenFormPatched) {
@@ -193,6 +214,7 @@
       applyModel();
       originalOpenForm(module, id);
       setTimeout(syncSessionDialog, 0);
+      setTimeout(syncOrganizationDialog, 0);
     };
   }
 
@@ -206,4 +228,5 @@
   }
 
   try { render(); } catch {}
+  setInterval(syncOrganizationDialog, 600);
 })();
