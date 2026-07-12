@@ -30,12 +30,7 @@
     if (!navRef) return;
     desiredNav.forEach(item => {
       const current = navRef.find(row => row[0] === item[0]);
-      if (current) {
-        current[1] = item[1];
-        current[2] = item[2];
-      } else {
-        navRef.push([...item]);
-      }
+      if (current) { current[1] = item[1]; current[2] = item[2]; } else { navRef.push([...item]); }
     });
     navRef.sort((a,b) => desiredNav.findIndex(item => item[0] === a[0]) - desiredNav.findIndex(item => item[0] === b[0]));
   }
@@ -123,6 +118,10 @@
     });
     const status = cfgs.programs?.fields?.find(field => field[0] === "status");
     if (status?.[4]) status[4] = status[4].map(value => value === "Programa" ? "En Programacion" : value);
+    if (cfgs.programs) {
+      cfgs.programs.columns = ["name", "institutionId", "type", "myRole", "hourlyRate"];
+      cfgs.programs.cols = cfgs.programs.columns;
+    }
     (state.programs || []).forEach(program => {
       embeddedPeople.forEach(field => delete program[field]);
       if (program.status === "Programa") program.status = "En Programacion";
@@ -170,9 +169,7 @@
     return hours > 0 ? String(Math.round(hours * 100) / 100) : "";
   }
 
-  function optionLabel(item){
-    return item?.name || item?.title || item?.concept || item?.id || "Sin nombre";
-  }
+  function optionLabel(item){ return item?.name || item?.title || item?.concept || item?.id || "Sin nombre"; }
 
   function ensureRelationSelect(name, module, labelText, required){
     const dialog = document.querySelector("#recordDialog");
@@ -257,6 +254,29 @@
     }
   }
 
+  function relationTextByKey(label, value){
+    const key = norm(label);
+    const id = String(value || "").trim();
+    if (!id || id === "-" || id === "—") return value;
+    if (key.includes("institucion")) return optionLabel((state.institutions || []).find(item => item.id === id)) || value;
+    if (key.includes("programa")) return optionLabel((state.programs || []).find(item => item.id === id)) || value;
+    if (key.includes("sesion")) return optionLabel((state.sessions || []).find(item => item.id === id)) || value;
+    if (key.includes("evaluacion")) return optionLabel((state.evaluations || []).find(item => item.id === id)) || value;
+    if (key.includes("documento")) return optionLabel((state.documents || []).find(item => item.id === id)) || value;
+    if (key.includes("factura") || key.includes("pago")) return optionLabel((state.finances || []).find(item => item.id === id)) || value;
+    return value;
+  }
+
+  function cleanVisibleRelationIds(){
+    document.querySelectorAll(".meta-grid span").forEach(row => {
+      const strong = row.querySelector("strong");
+      if (!strong) return;
+      const text = strong.textContent || "";
+      if (!/^(ins|pro|ses|eva|doc|fin|org|con)_/.test(text.trim())) return;
+      strong.textContent = relationTextByKey(row.childNodes[0]?.textContent || row.textContent || "", text);
+    });
+  }
+
   function applyModel(){
     applyNav();
     normalizeRelationFieldTypes();
@@ -299,10 +319,12 @@
     render = function(){
       applyModel();
       originalRender();
+      setTimeout(cleanVisibleRelationIds, 0);
     };
   }
 
   try { render(); } catch {}
   setInterval(syncRelationDialog, 600);
   setInterval(syncOrganizationDialog, 600);
+  setInterval(cleanVisibleRelationIds, 800);
 })();
