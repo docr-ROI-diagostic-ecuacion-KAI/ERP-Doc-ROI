@@ -128,62 +128,6 @@
     filters: ["role", "institutionId", "programId"]
   };
 
-  function ensureProgramPeopleFields(){
-    const cfg = cfgs.programs;
-    if (!cfg?.fields) return;
-    const defs = {
-      directorOrgId: ["directorOrgId", "Directora/director institucional", "relation:organization"],
-      coordinatorOrgId: ["coordinatorOrgId", "Coordinador/a de master", "relation:organization"],
-      adminOrgId: ["adminOrgId", "Administracion / pagos", "relation:organization"]
-    };
-    Object.entries(defs).forEach(([key, field]) => {
-      const current = cfg.fields.find(item => item[0] === key);
-      if (current) {
-        current[1] = field[1];
-        current[2] = field[2];
-      } else {
-        const institutionIndex = cfg.fields.findIndex(item => item[0] === "institutionId");
-        cfg.fields.splice(Math.max(0, institutionIndex + 1), 0, field);
-      }
-    });
-  }
-  ensureProgramPeopleFields();
-
-  function personMatchesInstitution(person, institutionId){
-    return !institutionId || !person?.institutionId || person.institutionId === institutionId;
-  }
-
-  function personMatchesProgram(person, programId){
-    return !programId || !person?.programId || person.programId === programId;
-  }
-
-  function allowedProgramPerson(field, person, institutionId, programId){
-    if (!personMatchesInstitution(person, institutionId)) return false;
-    if (field === "directorOrgId") return inSet(person.role, "institutionLead");
-    if (field === "coordinatorOrgId") return personMatchesProgram(person, programId) && (inSet(person.role, "coordinator") || inSet(person.role, "programLead"));
-    if (field === "adminOrgId") return personMatchesProgram(person, programId) && inSet(person.role, "admin");
-    return true;
-  }
-
-  function chooseProgramPeople(program){
-    if (!program) return;
-    const organization = state.organization || [];
-    const find = field => organization.find(person => allowedProgramPerson(field, person, program.institutionId, program.id));
-    const currentDirector = organization.find(person => person.id === program.directorOrgId);
-    if (!currentDirector || !allowedProgramPerson("directorOrgId", currentDirector, program.institutionId, program.id)) {
-      program.directorOrgId = find("directorOrgId")?.id || "";
-    }
-    const currentCoordinator = organization.find(person => person.id === program.coordinatorOrgId);
-    if (!currentCoordinator || !allowedProgramPerson("coordinatorOrgId", currentCoordinator, program.institutionId, program.id)) {
-      program.coordinatorOrgId = find("coordinatorOrgId")?.id || "";
-    }
-    const currentAdmin = organization.find(person => person.id === program.adminOrgId);
-    if (!currentAdmin || !allowedProgramPerson("adminOrgId", currentAdmin, program.institutionId, program.id)) {
-      program.adminOrgId = find("adminOrgId")?.id || "";
-    }
-  }
-  (state.programs || []).forEach(chooseProgramPeople);
-
   function filterProgramOptions(){
     const dialog = document.querySelector("#recordDialog");
     if (!dialog?.open || !/Organizacion/i.test(document.querySelector("#dialogKicker")?.textContent || "")) return;
@@ -208,43 +152,17 @@
     }
   }
 
-  function filterProgramPeopleSelectors(){
-    const dialog = document.querySelector("#recordDialog");
-    if (!dialog?.open || !/Programas/i.test(document.querySelector("#dialogKicker")?.textContent || "")) return;
-    const institution = dialog.querySelector('[name="institutionId"]');
-    const programId = dialog.querySelector('[name="id"]')?.value || "";
-    const selectedInstitution = institution?.value || "";
-    ["directorOrgId", "coordinatorOrgId", "adminOrgId"].forEach(field => {
-      const select = dialog.querySelector(`[name="${field}"]`);
-      if (!select) return;
-      const allowed = [];
-      [...select.options].forEach(option => {
-        if (!option.value) { option.hidden = false; return; }
-        const person = (state.organization || []).find(item => item.id === option.value);
-        const ok = Boolean(person && allowedProgramPerson(field, person, selectedInstitution, programId));
-        option.hidden = !ok;
-        if (ok) allowed.push(option.value);
-      });
-      if (select.selectedOptions[0]?.hidden) select.value = allowed[0] || "";
-      if (!select.value && allowed.length) select.value = allowed[0];
-    });
+  function personMatchesInstitution(person, institutionId){
+    return !institutionId || !person?.institutionId || person.institutionId === institutionId;
   }
-
-  document.addEventListener("change", event => {
-    if (event.target?.matches?.('#recordDialog [name="institutionId"]')) filterProgramOptions();
-    if (event.target?.matches?.('#recordDialog [name="institutionId"], #recordDialog [name="programId"]')) filterProgramPeopleSelectors();
-  }, true);
 
   const originalOpenForm = typeof openForm === "function" ? openForm : null;
   if (originalOpenForm && !globalThis.__docroiOrgStructureOpenFormPatched) {
     globalThis.__docroiOrgStructureOpenFormPatched = true;
     openForm = function(module, id){
       syncInstitutionLeads();
-      ensureProgramPeopleFields();
-      if (module === "programs" && id) chooseProgramPeople((state.programs || []).find(program => program.id === id));
       originalOpenForm(module, id);
       setTimeout(filterProgramOptions, 0);
-      setTimeout(filterProgramPeopleSelectors, 0);
     };
   }
 
@@ -347,4 +265,12 @@
   renderX();
   setTimeout(addSeparators, 0);
   setTimeout(addComputedEconomics, 0);
+})();
+
+(function(){
+  if (document.querySelector('script[src*="docroi-entity-model.js"]')) return;
+  const script = document.createElement("script");
+  script.src = "docroi-entity-model.js?v=20260712-entity-model-1";
+  script.defer = true;
+  (document.currentScript || document.body).after(script);
 })();
