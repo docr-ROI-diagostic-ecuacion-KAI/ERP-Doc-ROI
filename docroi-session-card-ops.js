@@ -1,5 +1,5 @@
 (function(){
-  const VERSION = "20260715-session-card-ops-2";
+  const VERSION = "20260715-session-card-ops-3";
   if (globalThis.__docroiSessionCardOps === VERSION) return;
   globalThis.__docroiSessionCardOps = VERSION;
 
@@ -46,7 +46,7 @@
 
   function daysTo(value){
     if (!value) return "-";
-    const base = typeof today !== "undefined" ? today : new Date();
+    const base = new Date();
     const sessionDate = new Date(`${value}T00:00:00`);
     const todayDate = new Date(base.getFullYear(), base.getMonth(), base.getDate());
     return Math.ceil((sessionDate - todayDate) / 86400000);
