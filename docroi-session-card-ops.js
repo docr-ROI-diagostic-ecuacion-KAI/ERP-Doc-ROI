@@ -1,5 +1,5 @@
 (function(){
-  const VERSION = "20260715-session-card-ops-3";
+  const VERSION = "20260715-session-card-ops-4";
   if (globalThis.__docroiSessionCardOps === VERSION) return;
   globalThis.__docroiSessionCardOps = VERSION;
 
@@ -28,6 +28,10 @@
       .session-ops-tile.days strong{color:#ff1616;font-size:3.05rem}
       .record-card.session-ops-card .progress,.record-card.session-ops-card .progress + *{display:none}
       .record-card.session-ops-card .card-actions{margin-top:0}
+      .record-card.session-ops-card.session-overdue{border-left-color:#ff4b5c;background:radial-gradient(circle at 70% 4%,rgba(255,75,92,.16),transparent 36%),linear-gradient(180deg,rgba(39,22,31,.96),rgba(16,16,26,.96))}
+      .record-card.session-ops-card.session-hidden-board{display:none!important}
+      .session-dismiss-btn{position:absolute;top:14px;right:14px;z-index:3;width:34px;height:34px;border:1px solid rgba(255,105,120,.45);border-radius:8px;background:rgba(60,13,24,.88);color:#ff8c9b;font-size:1rem;font-weight:900;line-height:1;cursor:pointer}
+      .session-dismiss-btn:hover{background:rgba(104,19,39,.95);color:#fff}
       @media(max-width:760px){.session-ops-grid{grid-template-columns:1fr}.record-card.session-ops-card h3{font-size:1.38rem}.record-card.session-ops-card p{font-size:1rem}}
     `;
     document.head.appendChild(style);
@@ -52,6 +56,21 @@
     return Math.ceil((sessionDate - todayDate) / 86400000);
   }
 
+  function dismissedIds(){
+    try { return new Set(JSON.parse(localStorage.getItem("docroi.dismissedSessions") || "[]")); }
+    catch { return new Set(); }
+  }
+
+  function dismissSession(id){
+    const ids = dismissedIds();
+    ids.add(id);
+    localStorage.setItem("docroi.dismissedSessions", JSON.stringify([...ids]));
+  }
+
+  function sessionSortValue(session){
+    return `${session.date || "9999-12-31"}T${session.startTime || "99:99"}`;
+  }
+
   function titleOf(item){
     return item?.name || item?.title || item?.concept || "Sin asignar";
   }
@@ -59,10 +78,19 @@
   function decorate(){
     injectStyles();
     if (typeof state === "undefined") return;
-    document.querySelectorAll(".records-grid.sessions .record-card").forEach(card => {
+    const dismissed = dismissedIds();
+    const cards = [...document.querySelectorAll(".records-grid.sessions .record-card")];
+    const visibleCards = [];
+    cards.forEach(card => {
       const detail = card.querySelector('[data-detail-module="sessions"][data-detail-id]');
       const session = (state.sessions || []).find(item => item.id === detail?.dataset.detailId);
-      if (!session || card.dataset.sessionOpsId === session.id) return;
+      if (!session) return;
+      const diff = daysTo(session.date);
+      const hidden = dismissed.has(session.id) || Number(diff) < -2;
+      card.classList.toggle("session-hidden-board", hidden);
+      card.classList.toggle("session-overdue", Number(diff) < 0 && Number(diff) >= -2);
+      card.dataset.sessionSort = sessionSortValue(session);
+      if (!hidden) visibleCards.push(card);
       const program = (state.programs || []).find(item => item.id === session.programId);
       const top = card.querySelector(".record-top");
       const logo = card.querySelector(".inherited-logo,.institution-logo");
@@ -78,6 +106,16 @@
         const edit = top.querySelector("[data-edit-module]");
         top.insertBefore(chip, edit || null);
       }
+      if (!(Number(diff) < 0 && Number(diff) >= -2)) card.querySelector(".session-dismiss-btn")?.remove();
+      if (Number(diff) < 0 && Number(diff) >= -2 && !card.querySelector(".session-dismiss-btn")) {
+        const dismiss = document.createElement("button");
+        dismiss.className = "session-dismiss-btn";
+        dismiss.type = "button";
+        dismiss.dataset.dismissSession = session.id;
+        dismiss.setAttribute("aria-label", "Quitar sesion del tablero");
+        dismiss.textContent = "x";
+        card.appendChild(dismiss);
+      }
       if (logo && logo.parentElement === card) top.after(logo);
       subtitle.innerHTML = `${titleOf(program)}:<br>${session.type || session.title || "Sesion"} - ${session.date || "Sin fecha"} ${session.startTime || ""}`;
       card.querySelector(".session-ops-grid")?.remove();
@@ -91,7 +129,21 @@
       `;
       meta.before(ops);
     });
+    const grid = document.querySelector(".records-grid.sessions");
+    if (grid) visibleCards
+      .sort((a, b) => String(a.dataset.sessionSort || "").localeCompare(String(b.dataset.sessionSort || "")))
+      .forEach(card => grid.appendChild(card));
   }
+
+  document.addEventListener("click", event => {
+    const button = event.target.closest("[data-dismiss-session]");
+    if (!button) return;
+    event.preventDefault();
+    event.stopPropagation();
+    dismissSession(button.dataset.dismissSession);
+    const card = button.closest(".record-card");
+    if (card) card.classList.add("session-hidden-board");
+  }, true);
 
   const originalRender = typeof render === "function" ? render : null;
   if (originalRender && !globalThis.__docroiSessionCardOpsRenderPatched) {
