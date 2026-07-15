@@ -1,5 +1,5 @@
 (function(){
-  const VERSION = "20260712-calendar-focus";
+  const VERSION = "20260715-calendar-local-date-1";
   if (globalThis.__docroiCalendarFocus === VERSION) return;
   globalThis.__docroiCalendarFocus = VERSION;
 
@@ -65,11 +65,18 @@
     return date.toLocaleDateString("es-ES", { weekday: "short", day: "numeric", month: "short" });
   }
 
+  function localDateKey(date){
+    const year = date.getFullYear();
+    const month = String(date.getMonth() + 1).padStart(2, "0");
+    const day = String(date.getDate()).padStart(2, "0");
+    return `${year}-${month}-${day}`;
+  }
+
   function renderWeekPlanner(sessions){
     const days = Array.from({ length: 7 }, (_, index) => {
       const date = new Date(new Date().toDateString());
       date.setDate(date.getDate() + index);
-      const key = date.toISOString().slice(0, 10);
+      const key = localDateKey(date);
       const daySessions = sessions.filter(session => session.date === key);
       return `<article class="calendar-day focused-calendar-day">
         <header><span>${dayLabel(date)}</span><strong>${daySessions.reduce((sum, session) => sum + Number(session.duration || 0), 0)} h</strong></header>
