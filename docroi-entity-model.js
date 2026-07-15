@@ -382,7 +382,7 @@
 
   const originalRender = typeof render === "function" ? render : null;
   if (originalRender && !globalThis.__docroiEntityModelRenderPatched) {
-    globalThis.__docEntityModelRenderPatched = true;
+    globalThis.__docroiEntityModelRenderPatched = true;
     render = function(){
       applyModel();
       originalRender();
