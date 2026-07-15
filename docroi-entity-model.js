@@ -1,5 +1,5 @@
 (function(){
-  const VERSION = "20260715-entity-model-5";
+  const VERSION = "20260715-entity-model-6";
   if (globalThis.__docroiEntityModel === VERSION) return;
   globalThis.__docroiEntityModel = VERSION;
 
@@ -95,7 +95,7 @@
       action: "Nueva persona",
       primary: "Nueva persona",
       fields: [
-        ["role", "Rol", "select", true, ["Directora academica", "Director academico", "Director/a de master", "Coordinador/a de master", "Responsable administrativo", "Responsable de finanzas", "Profesor", "Otro"]],
+        ["role", "Rol", "select", true, ["Directora academica", "Director academico", "Director/a de master", "Coordinador/a de master", "Responsable formacion", "Responsable administrativo", "Responsable de finanzas", "Profesor", "Otro"]],
         ["institutionId", "Institucion", "relation:institutions", true],
         ["programId", "Programa", "relation:programs"],
         ["name", "Nombre y apellidos", "text", true],
@@ -382,7 +382,7 @@
 
   const originalRender = typeof render === "function" ? render : null;
   if (originalRender && !globalThis.__docroiEntityModelRenderPatched) {
-    globalThis.__docroiEntityModelRenderPatched = true;
+    globalThis.__docEntityModelRenderPatched = true;
     render = function(){
       applyModel();
       originalRender();
