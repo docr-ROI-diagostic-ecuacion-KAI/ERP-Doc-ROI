@@ -1,5 +1,5 @@
 (function(){
-  const VERSION = "20260715-entity-model-3";
+  const VERSION = "20260715-entity-model-4";
   if (globalThis.__docroiEntityModel === VERSION) return;
   globalThis.__docroiEntityModel = VERSION;
 
@@ -307,6 +307,32 @@
       if (!/^(ins|pro|ses|eva|doc|fin|org|con)_/.test(text.trim())) return;
       strong.textContent = relationTextByKey(row.childNodes[0]?.textContent || row.textContent || "", text);
     });
+  }
+
+  function programMonthYear(value){
+    if (!value) return "";
+    const formatted = new Intl.DateTimeFormat("es-ES", { month: "short", year: "numeric" })
+      .format(new Date(`${value}T00:00:00`))
+      .replace(".", "");
+    return formatted.replace(/^(\p{L})/u, match => match.toUpperCase()).replace(/\s+/, "-");
+  }
+
+  function programDateRange(record){
+    const start = programMonthYear(record?.startDate);
+    const end = programMonthYear(record?.endDate);
+    if (start && end) return `${start} \u2192 ${end}`;
+    if (start) return `Inicio ${start}`;
+    if (end) return `Fin ${end}`;
+    return "Sin fechas de programa";
+  }
+
+  const originalSubtitle = typeof subtitle === "function" ? subtitle : null;
+  if (originalSubtitle && !globalThis.__docroiProgramSubtitlePatched) {
+    globalThis.__docroiProgramSubtitlePatched = true;
+    subtitle = function(module, record){
+      if (module === "programs") return programDateRange(record);
+      return originalSubtitle(module, record);
+    };
   }
 
   function applyModel(){
