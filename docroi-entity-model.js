@@ -1,5 +1,5 @@
 (function(){
-  const VERSION = "20260715-entity-model-4";
+  const VERSION = "20260715-entity-model-5";
   if (globalThis.__docroiEntityModel === VERSION) return;
   globalThis.__docroiEntityModel = VERSION;
 
@@ -326,11 +326,20 @@
     return "Sin fechas de programa";
   }
 
+  function whatsappPhone(value){
+    const phone = String(value || "").trim();
+    if (!phone) return "Sin telefono";
+    const digits = phone.replace(/[^\d+]/g, "").replace(/^\+/, "");
+    if (!digits) return phone;
+    return `<a href="https://wa.me/${digits}" target="_blank" rel="noreferrer">${phone}</a>`;
+  }
+
   const originalSubtitle = typeof subtitle === "function" ? subtitle : null;
   if (originalSubtitle && !globalThis.__docroiProgramSubtitlePatched) {
     globalThis.__docroiProgramSubtitlePatched = true;
     subtitle = function(module, record){
       if (module === "programs") return programDateRange(record);
+      if (module === "organization") return whatsappPhone(record?.phone);
       return originalSubtitle(module, record);
     };
   }
