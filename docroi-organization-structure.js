@@ -356,7 +356,7 @@
 (function(){
   if (document.querySelector('script[src*="docroi-entity-model.js"]')) return;
   const script = document.createElement("script");
-  script.src = "docroi-entity-model.js?v=20260715-entity-model-5";
+  script.src = "docroi-entity-model.js?v=20260715-entity-model-6";
   script.defer = true;
   (document.currentScript || document.body).after(script);
 })();
