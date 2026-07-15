@@ -1,5 +1,5 @@
 (function(){
-  const VERSION = "20260712-entity-model-2";
+  const VERSION = "20260715-entity-model-3";
   if (globalThis.__docroiEntityModel === VERSION) return;
   globalThis.__docroiEntityModel = VERSION;
 
@@ -30,7 +30,12 @@
     if (!navRef) return;
     desiredNav.forEach(item => {
       const current = navRef.find(row => row[0] === item[0]);
-      if (current) { current[1] = item[1]; current[2] = item[2]; } else { navRef.push([...item]); }
+      if (current) {
+        current[1] = item[1];
+        current[2] = item[2];
+      } else {
+        navRef.push([...item]);
+      }
     });
     navRef.sort((a,b) => desiredNav.findIndex(item => item[0] === a[0]) - desiredNav.findIndex(item => item[0] === b[0]));
   }
@@ -116,6 +121,16 @@
       const label = norm(field[1]);
       return embeddedPeople.has(key) || /director|catedratico|coordinador|responsable administrativo|rol administrativo|email administrativo|telefono administrativo/.test(label);
     });
+    const programFields = cfgs.programs?.fields || [];
+    const oldLogoField = programFields.find(field => /logo|foto/.test(norm(field[1])) && /programa/.test(norm(field[1])));
+    if (oldLogoField) {
+      oldLogoField[0] = "programUrl";
+      oldLogoField[1] = "Enlace al programa";
+      oldLogoField[2] = "url";
+      oldLogoField[3] = false;
+    } else if (!programFields.some(field => field[0] === "programUrl")) {
+      insertAfter("programs", "name", ["programUrl", "Enlace al programa", "url"]);
+    }
     const status = cfgs.programs?.fields?.find(field => field[0] === "status");
     if (status?.[4]) status[4] = status[4].map(value => value === "Programa" ? "En Programacion" : value);
     if (cfgs.programs) {
@@ -124,6 +139,13 @@
     }
     (state.programs || []).forEach(program => {
       embeddedPeople.forEach(field => delete program[field]);
+      program.programUrl ||= program.programLink || program.logoFile || "";
+      delete program.logoFile;
+      delete program.logoFileName;
+      delete program.logoFileData;
+      delete program.programLogoFile;
+      delete program.programLogoFileName;
+      delete program.programLogoFileData;
       if (program.status === "Programa") program.status = "En Programacion";
     });
   }
@@ -169,7 +191,46 @@
     return hours > 0 ? String(Math.round(hours * 100) / 100) : "";
   }
 
-  function optionLabel(item){ return item?.name || item?.title || item?.concept || item?.id || "Sin nombre"; }
+  function syncSessionDialog(){
+    const dialog = document.querySelector("#recordDialog");
+    if (!dialog?.open) return;
+    const kicker = document.querySelector("#dialogKicker")?.textContent || "";
+    const institution = dialog.querySelector('[name="institutionId"]');
+    const program = dialog.querySelector('[name="programId"]');
+    if (/Sesiones/i.test(kicker)) {
+      if (institution && program) {
+        [...program.options].forEach(option => {
+          if (!option.value) { option.hidden = false; return; }
+          const p = (state.programs || []).find(item => item.id === option.value);
+          option.hidden = Boolean(institution.value && p?.institutionId && p.institutionId !== institution.value);
+        });
+        const selectedProgram = (state.programs || []).find(item => item.id === program.value);
+        if (selectedProgram?.institutionId && !institution.value) institution.value = selectedProgram.institutionId;
+        if (program.selectedOptions[0]?.hidden) program.value = "";
+      }
+      const duration = dialog.querySelector('[name="duration"]');
+      const start = dialog.querySelector('[name="startTime"]');
+      const end = dialog.querySelector('[name="endTime"]');
+      if (duration && start && end) {
+        const calculated = hoursBetween(start.value, end.value);
+        duration.readOnly = true;
+        duration.placeholder = "Se calcula con inicio y fin";
+        if (calculated) duration.value = calculated;
+      }
+    }
+    if (/Organizacion/i.test(kicker) && institution && program) {
+      [...program.options].forEach(option => {
+        if (!option.value) { option.hidden = false; return; }
+        const p = (state.programs || []).find(item => item.id === option.value);
+        option.hidden = Boolean(institution.value && p?.institutionId && p.institutionId !== institution.value);
+      });
+      if (program.selectedOptions[0]?.hidden) program.value = "";
+    }
+  }
+
+  function optionLabel(item){
+    return item?.name || item?.title || item?.concept || item?.id || "Sin nombre";
+  }
 
   function ensureRelationSelect(name, module, labelText, required){
     const dialog = document.querySelector("#recordDialog");
@@ -225,39 +286,10 @@
     }
   }
 
-  function syncSessionDialog(){
-    const dialog = document.querySelector("#recordDialog");
-    if (!dialog?.open) return;
-    const kicker = document.querySelector("#dialogKicker")?.textContent || "";
-    const institution = dialog.querySelector('[name="institutionId"]');
-    const program = dialog.querySelector('[name="programId"]');
-    if (/Sesiones/i.test(kicker)) {
-      if (institution && program) {
-        [...program.options].forEach(option => {
-          if (!option.value) { option.hidden = false; return; }
-          const p = (state.programs || []).find(item => item.id === option.value);
-          option.hidden = Boolean(institution.value && p?.institutionId && p.institutionId !== institution.value);
-        });
-        const selectedProgram = (state.programs || []).find(item => item.id === program.value);
-        if (selectedProgram?.institutionId && !institution.value) institution.value = selectedProgram.institutionId;
-        if (program.selectedOptions[0]?.hidden) program.value = "";
-      }
-      const duration = dialog.querySelector('[name="duration"]');
-      const start = dialog.querySelector('[name="startTime"]');
-      const end = dialog.querySelector('[name="endTime"]');
-      if (duration && start && end) {
-        const calculated = hoursBetween(start.value, end.value);
-        duration.readOnly = true;
-        duration.placeholder = "Se calcula con inicio y fin";
-        if (calculated) duration.value = calculated;
-      }
-    }
-  }
-
   function relationTextByKey(label, value){
     const key = norm(label);
     const id = String(value || "").trim();
-    if (!id || id === "-" || id === "—") return value;
+    if (!id || id === "-" || id === "â€”") return value;
     if (key.includes("institucion")) return optionLabel((state.institutions || []).find(item => item.id === id)) || value;
     if (key.includes("programa")) return optionLabel((state.programs || []).find(item => item.id === id)) || value;
     if (key.includes("sesion")) return optionLabel((state.sessions || []).find(item => item.id === id)) || value;
